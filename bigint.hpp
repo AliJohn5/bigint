@@ -39,431 +39,146 @@
 
 #endif
 
+
+
 struct digit
 {
-    std::vector<bool> data = {0, 0, 0, 0, 0};
+    uint8_t data : 5;
 
-    typedef int size_t;
     inline digit()
     {
-        for (size_t i = 0; i < 5; ++i)
-        {
-            data[i] = 0;
-        }
+        data = 0;
     }
 
     inline digit(std::string s)
     {
-        int num = atoi(s.c_str());
-        for (int i = 4; i >= 0; --i)
-        {
-
-            data[i] = (num & 1);
-            num >>= 1;
-        }
-    }
-
-    inline digit(std::vector<bool> s)
-    {
-        if (s.size() == 5)
-        {
-            data = s;
-        }
-        else
-        {
-            std::cerr << "length must be five\n";
-            exit(-1);
-        }
+        data = atoi(s.c_str());
     }
 
     inline digit(int num)
     {
 
-        for (int i = 4; i >= 0; --i)
-        {
-            data[i] = (num & 1);
-            num >>= 1;
-        }
+        data = num;
     }
 
     inline short get()
     {
-        short num = 0;
-
-        if (data[4])
-            num += 1;
-        if (data[3])
-            num += 2;
-        if (data[2])
-            num += 4;
-        if (data[1])
-            num += 8;
-        if (data[0])
-            num += 16;
-
-        return num;
+        return data;
     }
 
     inline digit operator&(const digit a)
     {
-        digit ans;
-        for (size_t i = 0; i < 5; ++i)
-        {
-            ans.data[i] = a.data[i] & data[i];
-        }
-
-        return ans;
+        return data & a.data;
     }
 
     inline digit operator&=(const digit a)
     {
-        digit ans;
-        for (size_t i = 0; i < 5; ++i)
-        {
-            ans.data[i] = a.data[i] & data[i];
-        }
-
-        return ans;
+        return data & a.data;
     }
 
     inline digit operator|(const digit a)
     {
-        digit ans;
-        for (size_t i = 0; i < 5; ++i)
-        {
-            ans.data[i] = a.data[i] | data[i];
-        }
-
-        return ans;
+        return data | a.data;
     }
 
     inline digit operator|=(const digit a)
     {
-        digit ans;
-        for (size_t i = 0; i < 5; ++i)
-        {
-            ans.data[i] = a.data[i] | data[i];
-        }
-
-        return ans;
+        return data | a.data;
     }
 
     inline digit operator^(const digit a)
     {
-        digit ans;
-        for (size_t i = 0; i < 5; ++i)
-        {
-            ans.data[i] = a.data[i] ^ data[i];
-        }
-
-        return ans;
+        return data ^ a.data;
     }
 
     inline digit operator^=(const digit a)
     {
-        digit ans;
-        for (size_t i = 0; i < 5; ++i)
-        {
-            ans.data[i] = a.data[i] ^ data[i];
-        }
-
-        return ans;
+        return data ^ a.data;
     }
 
     inline digit operator!()
     {
-        digit ans;
-        for (size_t i = 0; i < 5; ++i)
-        {
-            ans.data[i] = !data[i];
-        }
-
-        return ans;
+        return !data;
     }
 
     inline digit operator+(digit a)
     {
-        bool carry = 0;
-        digit ans(0);
-        short j = 0;
-
-        /*
-        01010
-        00101
-        ------
-        01111
-        */
-
-        for (int i = 4; i >= 0; --i)
-        {
-
-            j = carry + a.data[i] + data[i];
-
-            // 00
-            if (j == 0)
-            {
-                ans.data[i] = 0;
-            }
-
-            // 01
-            if (j == 1)
-            {
-                ans.data[i] = 1;
-                carry = 0;
-            }
-
-            // 10
-            if (j == 2)
-            {
-                ans.data[i] = 0;
-                carry = 1;
-            }
-
-            // 11
-            if (j == 3)
-            {
-                ans.data[i] = 1;
-                carry = 1;
-            }
-        }
-
-        return ans;
+        return data + a.data;
     }
 
     inline digit operator*(digit a)
     {
-        return digit(this->get() * a.get());
+        return data * a.data;
     }
 
     inline digit operator*=(digit a)
     {
-        return digit(this->get() * a.get());
+        return data * a.data;
     }
 
     inline digit operator/(digit a)
     {
-        return digit(this->get() / a.get());
+        return data / a.data;
     }
 
     inline digit operator/=(digit a)
     {
-        return digit(this->get() / a.get());
+        return data / a.data;
     }
 
     inline digit operator%(digit a)
     {
-        return digit(this->get() % a.get());
+        return data % a.data;
     }
 
     inline digit operator%=(digit a)
     {
-        return digit(this->get() % a.get());
+        return data % a.data;
     }
 
     inline digit operator+=(const digit a)
     {
-        bool carry = 0;
-        digit ans;
-        short j = 0;
-
-        for (size_t i = 4; i >= 0; --i)
-        {
-
-            j = carry + a.data[i] + data[i];
-
-            // 00
-            if (j == 0)
-            {
-                ans.data[i] = 0;
-            }
-
-            // 01
-            if (j == 1)
-            {
-                ans.data[i] = 1;
-                carry = 0;
-            }
-
-            // 10
-            if (j == 2)
-            {
-                ans.data[i] = 0;
-                carry = 1;
-            }
-
-            // 11
-            if (j == 3)
-            {
-                ans.data[i] = 1;
-                carry = 1;
-            }
-        }
-
-        return ans;
+        return data + a.data;
     }
 
     inline digit operator-(const digit a)
     {
-        bool carry = 0;
-        digit ans;
-        digit d(this->data);
-
-        for (size_t i = 4; i >= 0; --i)
-        {
-
-            if (d.data[i] == a.data[i])
-            {
-                ans.data[i] = 0;
-            }
-            else if (d.data[i] && !a.data[i])
-            {
-                ans.data[i] = 1;
-            }
-            else
-            {
-                ans.data[i] = 1;
-                for (size_t j = i - 1; j >= 0; --j)
-                {
-                    if (d.data[j])
-                    {
-                        d.data[j] = 0;
-                        break;
-                    }
-                    else
-                    {
-                        d.data[j] = 1;
-                    }
-                }
-            }
-        }
-
-        return ans;
+        return data - a.data;
     }
 
     inline digit operator-=(const digit a)
     {
-        bool carry = 0;
-        digit ans;
-        digit d = *this;
-
-        for (size_t i = 4; i >= 0; --i)
-        {
-
-            if (d.data[i] == a.data[i])
-            {
-                ans.data[i] = 0;
-            }
-            else if (d.data[i] && !a.data[i])
-            {
-                ans.data[i] = 1;
-            }
-            else
-            {
-                ans.data[i] = 1;
-                for (size_t j = i - 1; j >= 0; --j)
-                {
-                    if (d.data[j])
-                    {
-                        d.data[j] = 0;
-                        break;
-                    }
-                    else
-                    {
-                        d.data[j] = 1;
-                    }
-                }
-            }
-        }
-
-        return ans;
+        return data - a.data;
     }
 
     inline bool operator<(const digit a)
     {
-        for (size_t i = 0; i < 5; ++i)
-        {
-            if (data[i] < a.data[i])
-            {
-                return true;
-            }
-            if (data[i] > a.data[i])
-            {
-                return false;
-            }
-        }
-        return false;
+        return data < a.data;
     }
 
     inline bool operator<=(const digit a)
     {
-        for (size_t i = 0; i < 5; ++i)
-        {
-            if (data[i] < a.data[i])
-            {
-                return true;
-            }
-            if (data[i] > a.data[i])
-            {
-                return false;
-            }
-        }
-        return true;
+        return data <= a.data;
     }
 
     inline bool operator>(const digit a)
     {
-        for (size_t i = 0; i < 5; ++i)
-        {
-            if (data[i] < a.data[i])
-            {
-                return false;
-            }
-            if (data[i] > a.data[i])
-            {
-                return true;
-            }
-        }
-        return false;
+        return data > a.data;
     }
 
     inline bool operator>=(const digit a)
     {
-        for (size_t i = 0; i < 5; ++i)
-        {
-            if (data[i] < a.data[i])
-            {
-                return false;
-            }
-            if (data[i] > a.data[i])
-            {
-                return true;
-            }
+        return data >= a.data;
         }
-        return true;
-    }
 
     inline bool operator==(const digit a)
     {
-        for (size_t i = 0; i < 5; ++i)
-        {
-            if (data[i] != a.data[i])
-            {
-                return false;
-            }
-        }
-        return true;
+        return data == a.data;
     }
 
     inline bool operator!=(const digit a)
     {
-        for (size_t i = 0; i < 5; ++i)
-        {
-            if (data[i] != a.data[i])
-            {
-                return true;
-            }
-        }
-        return false;
+        return data != a.data;
     }
 
     inline ~digit()
@@ -472,13 +187,13 @@ struct digit
 
     inline friend std::ostream &operator<<(std::ostream &out, digit &n)
     {
-        out << n.get();
+        out << n.data;
         return out;
     }
 
     inline friend std::istream &operator>>(std::istream &in, digit &n)
     {
-        short s;
+        uint8_t s;
         in >> s;
         n = digit(s);
         return in;

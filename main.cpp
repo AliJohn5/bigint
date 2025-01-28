@@ -2,11 +2,6 @@
 
 int main()
 {
-
-    digit dig = 2;
-    dig = dig * 3;
-    std::cout << dig << '\n';
-
 #ifdef TESTS_BIGINT
     BigInt test;
     test.testProduct(100000);
