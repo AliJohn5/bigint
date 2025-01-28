@@ -2,6 +2,8 @@
 
 int main()
 {
+
+
 #ifdef TESTS_BIGINT
     BigInt test;
     test.testProduct(100000);
