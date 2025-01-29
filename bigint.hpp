@@ -1,49 +1,40 @@
 #ifndef BIGINT_ALI
 #define BIGINT_ALI
 
-/*
-    (negative and positive):
-    supported operaters:
-        *
-        +
-        *=
-        +=
-        =
-        cout <<
-        cin >>
-        >
-        >=
-        <
-        <=
-        ==
-        !=
-        -
-        -=
-        /
-        /=
-        %
-        %=
-
-*/
+#define TESTS_BIGINT
 
 #include <iostream>
 #include <string>
 #include <vector>
-
-#define TESTS_BIGINT
-
-#ifdef TESTS_BIGINT
-
-#include <chrono>
-#include <time.h>
-
-#endif
-
-
+#include <stdexcept>
+#include <algorithm>
+#include <cstdint>
+#include <cassert>
 class BigInt
 {
 
-    inline std::string __product(const std::string &a, const std::string &b)
+    void remove_first_chars(std::string &s, char c)
+    {
+        int i = 0;
+        if (s.empty())
+        {
+            s = "0";
+            return;
+        }
+
+        if (s[i] != c)
+            return;
+
+        while (i < s.length())
+        {
+            if (s[i] != c)
+                break;
+            ++i;
+        }
+        s.erase(s.begin(), s.begin() + i);
+    }
+
+    std::string __product(const std::string &a, const std::string &b)
     {
         std::string res(a.size() + b.size(), '0');
 
@@ -78,28 +69,12 @@ class BigInt
             --ib;
         }
 
-        int i = 0;
+        remove_first_chars(res, '0');
 
-        while (i < res.size())
-        {
-            if (res[i] != '0')
-                break;
-            ++i;
-        }
-
-        if (i >= 0)
-        {
-            res.erase(
-                res.begin(),
-                res.begin() + i);
-        }
-
-        if (res == "")
-            return "0";
         return res;
     }
 
-    inline std::string __sum(const std::string &a, const std::string &b)
+    std::string __sum(const std::string &a, const std::string &b)
     {
         std::string res(std::max(a.length(), b.length()) + 1, '0');
         int carry = 0, ia = a.length() - 1, ib = b.length() - 1, sum = 0, ires = res.length() - 1;
@@ -139,26 +114,12 @@ class BigInt
             }
         }
 
-        int i = 0;
-
-        while (i < res.size())
-        {
-            if (res[i] != '0')
-                break;
-            ++i;
-        }
-
-        if (i >= 0)
-        {
-            res.erase(
-                res.begin(),
-                res.begin() + i);
-        }
+        remove_first_chars(res, '0');
 
         return res;
     }
 
-    inline std::string __minus(const std::string &a, const std::string &b)
+    std::string __minus(const std::string &a, const std::string &b)
     {
         std::string res(std::max(a.length(), b.length()) + 1, '0');
         int carry = 0, ia = a.length() - 1, ib = b.length() - 1, sum = 0, ires = res.length() - 1;
@@ -214,26 +175,12 @@ class BigInt
             }
         }
 
-        int i = 0;
-
-        while (i < res.size())
-        {
-            if (res[i] != '0')
-                break;
-            ++i;
-        }
-
-        if (i >= 0)
-        {
-            res.erase(
-                res.begin(),
-                res.begin() + i);
-        }
+        remove_first_chars(res, '0');
 
         return res;
     }
 
-    inline std::string __divide_string_by_2(const std::string &s)
+    std::string __divide_string_by_2(const std::string &s)
     {
         if (s.empty())
             return "0";
@@ -283,7 +230,7 @@ class BigInt
         return ans;
     }
 
-    inline bool __isStringLessThanEqualString(const std::string &a, const std::string &b)
+    bool __isStringLessThanEqualString(const std::string &a, const std::string &b)
     {
         if (a.length() == b.length())
         {
@@ -304,14 +251,14 @@ class BigInt
         return a.length() < b.length();
     }
 
-    inline std::string __divide(const std::string &a, const std::string &b)
+    std::string __divide(const std::string &a, const std::string &b)
     {
 
         if (b == "1")
             return a;
 
         if (b == "0")
-            return "0";
+            throw std::invalid_argument("can't divide by zero");
 
         std::string mx(a.length() - b.length() + 1, '0'),
             mn(std::max<long long>(a.length() - b.length(), 1), '0');
@@ -353,6 +300,8 @@ class BigInt
             if (lessmid && !lessmid1)
             {
                 // std::cout << mid << '\n';
+                remove_first_chars(mid, '0');
+
                 return mid;
             }
             if (lessmid && lessmid1)
@@ -364,11 +313,12 @@ class BigInt
                 mx = __minus(mid, "1");
             }
         }
+        remove_first_chars(mid, '0');
 
         return mid;
     }
 
-    inline std::string __mod(const std::string &a, const std::string &b)
+    std::string __mod(const std::string &a, const std::string &b)
     {
         return __minus(a, __product(__divide(a, b), b));
     }
@@ -376,7 +326,14 @@ class BigInt
 public:
     std::string num;
     bool isPositive = true;
-    inline BigInt(std::string s)
+    std::string to_string()
+    {
+        if (isPositive)
+            return num;
+        else
+            return "-" + num;
+    }
+    BigInt(std::string s)
     {
         if (!s.empty())
         {
@@ -397,7 +354,7 @@ public:
         }
     }
 
-    inline BigInt(const char *c)
+    BigInt(const char *c)
     {
         std::string s = c;
         if (!s.empty())
@@ -419,7 +376,7 @@ public:
         }
     }
 
-    inline BigInt(long long int _n)
+    BigInt(long long int _n)
     {
         if (_n < 0)
         {
@@ -434,7 +391,7 @@ public:
         }
     }
 
-    inline BigInt(int _n)
+    BigInt(int _n)
     {
         if (_n < 0)
         {
@@ -449,14 +406,14 @@ public:
         }
     }
 
-    inline BigInt()
+    BigInt()
     {
     }
-    inline std::string getNum()
+    std::string getNum()
     {
         return (isPositive ? num : "-" + num);
     }
-    inline void setNum(std::string s)
+    void setNum(std::string s)
     {
         if (!s.empty())
         {
@@ -474,7 +431,7 @@ public:
             num = s;
     }
 
-    inline BigInt operator*(const BigInt a)
+    BigInt operator*(const BigInt a)
     {
         if (a.isPositive && this->isPositive)
         {
@@ -494,7 +451,7 @@ public:
         return ans;
     }
 
-    inline BigInt operator/(const BigInt a)
+    BigInt operator/(const BigInt a)
     {
         if (a.isPositive && this->isPositive)
         {
@@ -511,10 +468,11 @@ public:
 
         BigInt ans(__divide(this->num, a.num));
         ans.isPositive = 0;
+
         return ans;
     }
 
-    inline BigInt operator%(const BigInt a)
+    BigInt operator%(const BigInt a)
     {
         if (a.isPositive && this->isPositive)
         {
@@ -527,7 +485,7 @@ public:
         return ans;
     }
 
-    inline BigInt operator*=(const BigInt a)
+    BigInt operator*=(const BigInt a)
     {
         if (a.isPositive && this->isPositive)
             return BigInt(__product(this->num, a.num));
@@ -540,7 +498,7 @@ public:
         return ans;
     }
 
-    inline BigInt operator/=(const BigInt a)
+    BigInt operator/=(const BigInt a)
     {
         if (a.isPositive && this->isPositive)
             return BigInt(__divide(this->num, a.num));
@@ -553,7 +511,7 @@ public:
         return ans;
     }
 
-    inline BigInt operator%=(const BigInt a)
+    BigInt operator%=(const BigInt a)
     {
         if (a.isPositive && this->isPositive)
             return BigInt(__mod(this->num, a.num));
@@ -563,7 +521,7 @@ public:
         return ans;
     }
 
-    inline BigInt operator*=(const std::string a)
+    BigInt operator*=(const std::string a)
     {
         BigInt c(a);
         if (c.isPositive && this->isPositive)
@@ -577,7 +535,7 @@ public:
         return ans;
     }
 
-    inline BigInt operator/=(const std::string a)
+    BigInt operator/=(const std::string a)
     {
         BigInt c(a);
         if (c.isPositive && this->isPositive)
@@ -591,7 +549,7 @@ public:
         return ans;
     }
 
-    inline BigInt operator%=(const std::string a)
+    BigInt operator%=(const std::string a)
     {
         BigInt c(a);
         if (c.isPositive && this->isPositive)
@@ -602,7 +560,7 @@ public:
         return ans;
     }
 
-    inline BigInt operator+(const BigInt a)
+    BigInt operator+(const BigInt a)
     {
         BigInt &d = *this;
 
@@ -634,17 +592,17 @@ public:
         return d;
     }
 
-    inline BigInt operator+=(const BigInt a)
+    BigInt operator+=(const BigInt a)
     {
         BigInt v = *this + a;
         return v;
     }
-    inline BigInt operator+=(const std::string a)
+    BigInt operator+=(const std::string a)
     {
         BigInt v = *this + BigInt(a);
         return v;
     }
-    inline bool operator>(const BigInt a)
+    bool operator>(const BigInt a)
     {
         if (this->isPositive && !a.isPositive)
             return true;
@@ -695,7 +653,7 @@ public:
         return false;
     }
 
-    inline bool operator<(const BigInt a)
+    bool operator<(const BigInt a)
     {
         if (this->isPositive && !a.isPositive)
             return false;
@@ -745,7 +703,7 @@ public:
         }
     }
 
-    inline bool operator>=(const BigInt a)
+    bool operator>=(const BigInt a)
     {
         if (this->isPositive && !a.isPositive)
             return true;
@@ -793,9 +751,10 @@ public:
 
             return this->num.length() < a.num.length();
         }
+        return 0;
     }
 
-    inline bool operator<=(const BigInt a)
+    bool operator<=(const BigInt a)
     {
         if (this->isPositive && !a.isPositive)
             return false;
@@ -843,9 +802,10 @@ public:
 
             return this->num.length() > a.num.length();
         }
+        return 0;
     }
 
-    inline bool operator==(const BigInt a)
+    bool operator==(const BigInt a)
     {
         if (this->num.length() == a.num.length() && this->isPositive == a.isPositive)
         {
@@ -862,7 +822,7 @@ public:
         return false;
     }
 
-    inline bool operator!=(const BigInt a)
+    bool operator!=(const BigInt a)
     {
         if (this->num.length() == a.num.length() && this->isPositive == a.isPositive)
         {
@@ -879,7 +839,7 @@ public:
         return true;
     }
 
-    inline friend std::ostream &operator<<(std::ostream &out, const BigInt &n)
+    friend std::ostream &operator<<(std::ostream &out, const BigInt &n)
     {
         if (n.isPositive)
             out << n.num;
@@ -889,7 +849,7 @@ public:
         return out;
     }
 
-    inline friend std::istream &operator>>(std::istream &in, BigInt &n)
+    friend std::istream &operator>>(std::istream &in, BigInt &n)
     {
         std::string s;
         in >> s;
@@ -911,7 +871,7 @@ public:
         return in;
     }
 
-    inline void operator=(std::string s)
+    void operator=(std::string s)
     {
         if (!s.empty())
         {
@@ -929,7 +889,7 @@ public:
             num = s;
     }
 
-    inline void operator=(long long s)
+    void operator=(long long s)
     {
         if (s < 0)
         {
@@ -944,7 +904,7 @@ public:
         }
     }
 
-    inline void operator=(int s)
+    void operator=(int s)
     {
         if (s < 0)
         {
@@ -959,7 +919,7 @@ public:
         }
     }
 
-    inline void operator=(const char *c)
+    void operator=(const char *c)
     {
         std::string s = c;
         if (!s.empty())
@@ -981,12 +941,12 @@ public:
         }
     }
 
-    inline bool isOdd()
+    bool isOdd()
     {
         return ((num[num.length() - 1] - '0') & 1);
     }
 
-    inline BigInt operator-(const BigInt a)
+    BigInt operator-(const BigInt a)
     {
         BigInt &d = *this;
 
@@ -1028,19 +988,110 @@ public:
         return d;
     }
 
-    inline BigInt operator-=(const BigInt a)
+    BigInt operator-=(const BigInt a)
     {
         BigInt v = *this - a;
         return v;
     }
-    inline BigInt operator-=(const std::string a)
+    BigInt operator-=(const std::string a)
     {
         BigInt v = *this - BigInt(a);
         return v;
     }
+};
 
 #ifdef TESTS_BIGINT
-    inline void testProduct(int n)
+#include <chrono>
+class BigIntTester
+{
+public:
+    static void run_all_tests()
+    {
+        test_multiplication();
+
+        test_division();
+
+        test_modulo();
+
+        test_comparisons();
+
+        test_conversions();
+
+        testSum(100000);
+
+        testMinus(100000);
+
+        testProduct(100000);
+
+        testDivide(100000);
+
+        testMod(100000);
+
+        std::cout << "All tests passed!\n";
+    }
+
+private:
+    static void test_multiplication()
+    {
+
+        assert(BigInt(123) * BigInt(2) == BigInt(246));
+
+        assert(BigInt(-12) * BigInt(3) == BigInt(-36));
+
+
+        BigInt a("123456789");
+        BigInt b("987654321");
+
+        assert(a * b == BigInt("121932631112635269"));
+    }
+
+    static void test_division()
+    {
+        assert(BigInt(100) / BigInt(5) == BigInt(20));
+        assert(BigInt(-81) / BigInt(9) == BigInt(-9));
+        bool caught = false;
+        try
+        {
+            BigInt(5) / BigInt(0);
+        }
+        catch (const std::invalid_argument &)
+        {
+            caught = true;
+        }
+        assert(caught);
+    }
+
+    static void test_modulo()
+    {
+        assert(BigInt(17) % BigInt(5) == BigInt(2));
+        assert(BigInt(-17) % BigInt(5) == BigInt(-2));
+        assert(BigInt(25) % BigInt(7) == BigInt(4));
+    }
+
+    static void test_comparisons()
+    {
+        assert(BigInt(5) > BigInt(3));
+        assert(BigInt(-2) <= BigInt(0));
+        assert(BigInt("1000000") >= BigInt(999999));
+    }
+
+    static void test_conversions()
+    {
+        assert(BigInt("12345") == 12345);
+        assert(BigInt("-42") == -42);
+        bool caught = true;
+        try
+        {
+            BigInt("9999999999999999999");
+        }
+        catch (const std::overflow_error &)
+        {
+            caught = false;
+        }
+        assert(caught);
+    }
+
+    static void testProduct(int n)
     {
         srand(time(0));
         long long ia, ib, ic;
@@ -1054,16 +1105,16 @@ public:
             ib = (long long)(rand() % 1000000) - 500000;
             ic = ia * ib;
 
-            bia.setNum(std::to_string(ia));
-            bib.setNum(std::to_string(ib));
+            bia = std::to_string(ia);
+            bib = std::to_string(ib);
 
             bic = bia * bib;
 
-            if (atoll(bic.getNum().c_str()) != ic)
+            if (atoll(bic.to_string().c_str()) != ic)
             {
                 std::cerr << "ERROR in test: " << i << std::endl;
                 std::cerr << ia << " * " << ib << " = " << ic << std::endl;
-                std::cerr << "you get " << bia.getNum() << " * " << bib.getNum() << " = " << bic.getNum() << std::endl;
+                std::cerr << "you get " << bia << " * " << bib << " = " << bic << std::endl;
                 exit(-1);
             }
         }
@@ -1074,7 +1125,7 @@ public:
         std::cout << "OK passed all product tests (" << n << ") in " << microsec << " micro second.\n";
     }
 
-    inline void testSum(int n)
+    static void testSum(int n)
     {
         long long ia, ib, ic;
         BigInt bia, bib, bic;
@@ -1083,19 +1134,20 @@ public:
 
         for (size_t i = 0; i < n; i++)
         {
-            ia = (rand() % 1000000) - 500000;
-            ib = (rand() % 1000000) - 500000;
+            ia = (long long)(rand() % 1000000) - 500000;
+            ib = (long long)(rand() % 1000000) - 500000;
             ic = ia + ib;
 
-            bia.setNum(std::to_string(ia));
-            bib.setNum(std::to_string(ib));
+            bia = std::to_string(ia);
+            bib = std::to_string(ib);
+
             bic = bia + bib;
 
-            if (atoll(bic.getNum().c_str()) != ic)
+            if (atoll(bic.to_string().c_str()) != ic)
             {
                 std::cerr << "ERROR in test: " << i << std::endl;
                 std::cerr << ia << " + " << ib << " = " << ic << std::endl;
-                std::cerr << "you get " << bia.getNum() << " + " << bib.getNum() << " = " << bic.getNum() << std::endl;
+                std::cerr << "you get " << bia << " + " << bib << " = " << bic << std::endl;
                 exit(-1);
             }
         }
@@ -1106,39 +1158,7 @@ public:
         std::cout << "OK passed all sum tests (" << n << ") in " << microsec << " micro second.\n";
     }
 
-    inline void testSum2(int n)
-    {
-        long long ia, ib;
-        BigInt bia, bib;
-
-        auto start = std::chrono::high_resolution_clock::now();
-
-        for (size_t i = 0; i < n; i++)
-        {
-            ia = (rand() % 1000000) - 500000;
-            ib = (rand() % 1000000) - 500000;
-            ia += ib;
-
-            bia.setNum(std::to_string(ia));
-            bib.setNum(std::to_string(ib));
-            bia += bib;
-
-            if (atoll(bia.getNum().c_str()) != ia)
-            {
-                std::cerr << "ERROR in test: " << i << std::endl;
-                std::cerr << ia - ib << " += " << ib << " = " << ia << std::endl;
-                std::cerr << "you get " << bia.getNum() << std::endl;
-                exit(-1);
-            }
-        }
-        auto finish = std::chrono::high_resolution_clock::now();
-
-        int64_t microsec = std::chrono::duration_cast<std::chrono::microseconds>(finish - start).count();
-
-        std::cout << "OK passed all sum tests (" << n << ") in " << microsec << " micro second.\n";
-    }
-
-    inline void testMinus(int n)
+    static void testMinus(int n)
     {
         long long ia, ib, ic;
         BigInt bia, bib, bic;
@@ -1147,19 +1167,20 @@ public:
 
         for (size_t i = 0; i < n; i++)
         {
-            ia = (rand() % 1000000) - 500000;
-            ib = (rand() % 1000000) - 500000;
+            ia = (long long)(rand() % 1000000) - 500000;
+            ib = (long long)(rand() % 1000000) - 500000;
             ic = ia - ib;
 
-            bia.setNum(std::to_string(ia));
-            bib.setNum(std::to_string(ib));
+            bia = std::to_string(ia);
+            bib = std::to_string(ib);
+
             bic = bia - bib;
 
-            if (atoll(bic.getNum().c_str()) != ic)
+            if (atoll(bic.to_string().c_str()) != ic)
             {
                 std::cerr << "ERROR in test: " << i << std::endl;
                 std::cerr << ia << " - " << ib << " = " << ic << std::endl;
-                std::cerr << "you get " << bia.getNum() << " - " << bib.getNum() << " = " << bic.getNum() << std::endl;
+                std::cerr << "you get " << bia << " * " << bib << " = " << bic << std::endl;
                 exit(-1);
             }
         }
@@ -1170,7 +1191,7 @@ public:
         std::cout << "OK passed all sum tests (" << n << ") in " << microsec << " micro second.\n";
     }
 
-    inline void testDivide(int n)
+    static void testDivide(int n)
     {
         long long ia, ib, ic;
         BigInt bia, bib, bic;
@@ -1179,19 +1200,20 @@ public:
 
         for (size_t i = 0; i < n; i++)
         {
-            ia = (rand() % 1000000) - 500000;
-            ib = (rand() % 1000000) - 500000;
+            ia = (long long)(rand() % 1000000) - 500000;
+            ib = (long long)(rand() % 1000000) - 500000;
             ic = ia / ib;
 
-            bia.setNum(std::to_string(ia));
-            bib.setNum(std::to_string(ib));
+            bia = std::to_string(ia);
+            bib = std::to_string(ib);
+
             bic = bia / bib;
 
-            if (atoll(bic.getNum().c_str()) != ic)
+            if (atoll(bic.to_string().c_str()) != ic)
             {
                 std::cerr << "ERROR in test: " << i << std::endl;
                 std::cerr << ia << " / " << ib << " = " << ic << std::endl;
-                std::cerr << "you get " << bia.getNum() << " / " << bib.getNum() << " = " << bic.getNum() << std::endl;
+                std::cerr << "you get " << bia << " / " << bib << " = " << bic << std::endl;
                 exit(-1);
             }
         }
@@ -1202,7 +1224,7 @@ public:
         std::cout << "OK passed all sum tests (" << n << ") in " << microsec << " micro second.\n";
     }
 
-    inline void testMod(int n)
+    static void testMod(int n)
     {
         long long ia, ib, ic;
         BigInt bia, bib, bic;
@@ -1211,19 +1233,20 @@ public:
 
         for (size_t i = 0; i < n; i++)
         {
-            ia = (rand() % 1000000) - 500000;
-            ib = (rand() % 1000000) - 500000;
+            ia = (long long)(rand() % 1000000) - 500000;
+            ib = (long long)(rand() % 1000000) - 500000;
             ic = ia % ib;
 
-            bia.setNum(std::to_string(ia));
-            bib.setNum(std::to_string(ib));
+            bia = std::to_string(ia);
+            bib = std::to_string(ib);
+
             bic = bia % bib;
 
-            if (atoll(bic.getNum().c_str()) != ic)
+            if (atoll(bic.to_string().c_str()) != ic)
             {
                 std::cerr << "ERROR in test: " << i << std::endl;
-                std::cerr << ia << " % " << ib << " = " << ic << std::endl;
-                std::cerr << "you get " << bia.getNum() << " % " << bib.getNum() << " = " << bic.getNum() << std::endl;
+                std::cerr << ia << " * " << ib << " = " << ic << std::endl;
+                std::cerr << "you get " << bia << " * " << bib << " = " << bic << std::endl;
                 exit(-1);
             }
         }
@@ -1233,38 +1256,7 @@ public:
 
         std::cout << "OK passed all sum tests (" << n << ") in " << microsec << " micro second.\n";
     }
-
-    inline void testDivideBy2(int n)
-    {
-        long long ia, ic;
-        std::string bia, bic;
-
-        auto start = std::chrono::high_resolution_clock::now();
-
-        for (size_t i = 0; i < n; i++)
-        {
-            ia = (rand() % 1000000);
-            bia = std::to_string(ia);
-
-            ic = ia / 2;
-            bic = __divide_string_by_2(bia);
-
-            if (atoll(bic.c_str()) != ic)
-            {
-                std::cerr << "ERROR in test: " << i << std::endl;
-                std::cerr << ia << " 2 / " << " = " << ic << std::endl;
-                std::cerr << "you get " << bia << " / 2 " << " = " << bic << std::endl;
-                exit(-1);
-            }
-        }
-        auto finish = std::chrono::high_resolution_clock::now();
-
-        int64_t microsec = std::chrono::duration_cast<std::chrono::microseconds>(finish - start).count();
-
-        std::cout << "OK passed all sum tests (" << n << ") in " << microsec << " micro second.\n";
-    }
-
-#endif
 };
+#endif
 
 #endif
