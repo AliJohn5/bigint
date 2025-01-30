@@ -10,11 +10,14 @@
 #include <algorithm>
 #include <cstdint>
 #include <cassert>
+
+#define alid(a) std::cout << a << '\n'
 class BigInt
 {
 
     void remove_first_chars(std::string &s, char c)
     {
+
         int i = 0;
         if (s.empty())
         {
@@ -254,34 +257,38 @@ class BigInt
     std::string __divide(const std::string &a, const std::string &b)
     {
 
-        if (b == "1")
-            return a;
-
         if (b == "0")
             throw std::invalid_argument("can't divide by zero");
-
-        std::string mx(a.length() - b.length() + 1, '0'),
-            mn(std::max<long long>(a.length() - b.length(), 1), '0');
-
-        mx[0] = '1';
-        mn[0] = '1';
-
+        if (b == "1")
+            return a;
         if (b.size() > a.size())
         {
             return "0";
         }
-
         if (b.size() == a.size())
         {
+            bool equal = 1;
             for (int i = 0; i < a.size(); ++i)
             {
 
                 if (b[i] > a[i])
                     return "0";
                 if (b[i] < a[i])
+                {
+                    equal = 0;
                     break;
+                }
             }
+
+            if (equal)
+                return "1";
         }
+
+        std::string mx(a.length() - b.length() + 2, '0'),
+            mn(std::max<long long>(a.length() - b.length(), 1), '0');
+
+        mx[0] = '1';
+        mn[0] = '1';
 
         std::string mid, mid1, prod, prod1;
         bool lessmid, lessmid1;
@@ -289,7 +296,7 @@ class BigInt
         while (__isStringLessThanEqualString(mn, mx))
         {
             mid = __divide_string_by_2(__sum(mx, mn));
-            mid1 = __sum(mid1, "1");
+            mid1 = __sum(mid, "1");
 
             prod = __product(mid, b);
             prod1 = __product(mid1, b);
@@ -299,11 +306,11 @@ class BigInt
 
             if (lessmid && !lessmid1)
             {
-                // std::cout << mid << '\n';
-                remove_first_chars(mid, '0');
 
+                remove_first_chars(mid, '0');
                 return mid;
             }
+
             if (lessmid && lessmid1)
             {
                 mn = mid1;
@@ -313,6 +320,7 @@ class BigInt
                 mx = __minus(mid, "1");
             }
         }
+
         remove_first_chars(mid, '0');
 
         return mid;
@@ -335,6 +343,7 @@ public:
     }
     BigInt(std::string s)
     {
+
         if (!s.empty())
         {
             if (s[0] == '-')
@@ -349,9 +358,13 @@ public:
 
         else
         {
+
             isPositive = 1;
-            num = s;
+            num = "0";
         }
+
+        if (num == "0")
+            isPositive = true;
     }
 
     BigInt(const char *c)
@@ -372,8 +385,11 @@ public:
         else
         {
             isPositive = 1;
-            num = s;
+            num = "0";
         }
+
+        if (num == "0")
+            isPositive = true;
     }
 
     BigInt(long long int _n)
@@ -389,6 +405,9 @@ public:
             isPositive = 1;
             num = std::to_string(_n);
         }
+
+        if (num == "0")
+            isPositive = true;
     }
 
     BigInt(int _n)
@@ -404,6 +423,8 @@ public:
             isPositive = 1;
             num = std::to_string(_n);
         }
+        if (num == "0")
+            isPositive = true;
     }
 
     BigInt()
@@ -429,6 +450,9 @@ public:
 
         else
             num = s;
+
+        if (num == "0")
+            isPositive = true;
     }
 
     BigInt operator*(const BigInt a)
@@ -456,11 +480,13 @@ public:
         if (a.isPositive && this->isPositive)
         {
             BigInt ans(__divide(this->num, a.num));
+
             return ans;
         }
 
         if (!a.isPositive && !this->isPositive)
         {
+
             BigInt ans(__divide(this->num, a.num));
 
             return ans;
@@ -474,9 +500,17 @@ public:
 
     BigInt operator%(const BigInt a)
     {
+
         if (a.isPositive && this->isPositive)
         {
             BigInt ans(__mod(this->num, a.num));
+            return ans;
+        }
+
+        if (!a.isPositive && this->isPositive)
+        {
+            BigInt ans(__mod(this->num, a.num));
+            ans.isPositive = 1;
             return ans;
         }
 
@@ -579,15 +613,16 @@ public:
         if (d.isPositive && !a.isPositive)
         {
             BigInt c = a;
-            c.isPositive = true;
+            c.isPositive = 1;
             return d - c;
         }
 
         if (!d.isPositive && a.isPositive)
         {
-            BigInt c = d;
-            c.isPositive = true;
-            return c - a;
+
+            BigInt c = a;
+            d.isPositive = true;
+            return c - d;
         }
         return d;
     }
@@ -701,6 +736,7 @@ public:
 
             return this->num.length() > a.num.length();
         }
+        return 0;
     }
 
     bool operator>=(const BigInt a)
@@ -952,10 +988,14 @@ public:
 
         if (d.isPositive && a.isPositive)
         {
-            if (d > a)
+            if (d >= a)
+            {
+
                 return BigInt(__minus(this->num, a.num));
+            }
             else
             {
+
                 BigInt ans(__minus(a.num, this->num));
                 ans.isPositive = 0;
                 return ans;
@@ -964,10 +1004,14 @@ public:
 
         if (!d.isPositive && !a.isPositive)
         {
-            if (d > a)
+            if (d >= a)
+            {
+
                 return BigInt(__minus(a.num, this->num));
+            }
             else
             {
+
                 BigInt ans(__minus(this->num, a.num));
                 ans.isPositive = 0;
                 return ans;
@@ -976,11 +1020,13 @@ public:
 
         if (d.isPositive && !a.isPositive)
         {
+
             return BigInt(__sum(this->num, a.num));
         }
 
         if (!d.isPositive && a.isPositive)
         {
+
             BigInt ans(__sum(a.num, this->num));
             ans.isPositive = 0;
             return ans;
@@ -1004,9 +1050,14 @@ public:
 #include <chrono>
 class BigIntTester
 {
+
 public:
-    static void run_all_tests()
+    int test_counter = 1;
+
+    void run_all_tests(int n)
     {
+        auto start = std::chrono::high_resolution_clock::now();
+
         test_multiplication();
 
         test_division();
@@ -1017,38 +1068,96 @@ public:
 
         test_conversions();
 
-        testSum(100000);
+        loop_test_operater(n, '+');
+        loop_test_operater(n, '-');
+        loop_test_operater(n, '/');
+        loop_test_operater(n, '*');
+        loop_test_operater(n, '%');
 
-        testMinus(100000);
+        auto finish = std::chrono::high_resolution_clock::now();
 
-        testProduct(100000);
+        int64_t microsec = std::chrono::duration_cast<std::chrono::microseconds>(finish - start).count();
 
-        testDivide(100000);
-
-        testMod(100000);
-
-        std::cout << "All tests passed!\n";
+        std::cout
+            << "All tests passed in " << microsec << " micro second\n";
     }
 
 private:
-    static void test_multiplication()
+    void loop_test_operater(
+        int n,
+        char operator__)
+    {
+        test_operator_with_range(
+            n,
+            operator__,
+            0, 10000000,
+            0, 10000000);
+        test_operator_with_range(
+            n,
+            operator__,
+            -10000000, 0,
+            -10000000, 0);
+
+        test_operator_with_range(
+            n,
+            operator__,
+            -10000000, 10000000,
+            -10000000, 10000000);
+
+        test_operator_with_range(
+            n,
+            operator__,
+            0, 10000000,
+            -10000000, 0);
+        test_operator_with_range(
+            n,
+            operator__,
+            -10000000, 0,
+            0, 10000000);
+
+        test_operator_with_range_same(
+            n,
+            operator__,
+            0, 10000000);
+
+        test_operator_with_range_same(
+            n,
+            operator__,
+            -10000000, 0);
+
+        test_operator_with_range_same(
+            n,
+            operator__,
+            -10000000, 10000000);
+    }
+
+    void test_multiplication()
     {
 
         assert(BigInt(123) * BigInt(2) == BigInt(246));
 
         assert(BigInt(-12) * BigInt(3) == BigInt(-36));
 
+        assert(BigInt(0) * BigInt(0) == BigInt(0));
+
+        assert(BigInt(1) * BigInt(2) == BigInt(2));
 
         BigInt a("123456789");
         BigInt b("987654321");
 
         assert(a * b == BigInt("121932631112635269"));
+
+        std::cout << "test [ " << test_counter << " ] ok.\n";
+
+        ++test_counter;
     }
 
-    static void test_division()
+    void test_division()
     {
         assert(BigInt(100) / BigInt(5) == BigInt(20));
         assert(BigInt(-81) / BigInt(9) == BigInt(-9));
+        assert(BigInt(0) / BigInt(1) == BigInt(0));
+
         bool caught = false;
         try
         {
@@ -1059,23 +1168,46 @@ private:
             caught = true;
         }
         assert(caught);
+
+        std::cout << "test [ " << test_counter << " ] ok.\n";
+
+        ++test_counter;
     }
 
-    static void test_modulo()
+    void test_modulo()
     {
         assert(BigInt(17) % BigInt(5) == BigInt(2));
         assert(BigInt(-17) % BigInt(5) == BigInt(-2));
         assert(BigInt(25) % BigInt(7) == BigInt(4));
+        assert(BigInt(0) % BigInt(1) == BigInt(0));
+
+        bool caught = false;
+        try
+        {
+            BigInt(5) % BigInt(0);
+        }
+        catch (const std::invalid_argument &)
+        {
+            caught = true;
+        }
+        assert(caught);
+        std::cout << "test [ " << test_counter << " ] ok.\n";
+
+        ++test_counter;
     }
 
-    static void test_comparisons()
+    void test_comparisons()
     {
         assert(BigInt(5) > BigInt(3));
         assert(BigInt(-2) <= BigInt(0));
         assert(BigInt("1000000") >= BigInt(999999));
+        assert(!(BigInt(-0) < BigInt(0)));
+
+        std::cout << "test [ " << test_counter << " ] ok.\n";
+        ++test_counter;
     }
 
-    static void test_conversions()
+    void test_conversions()
     {
         assert(BigInt("12345") == 12345);
         assert(BigInt("-42") == -42);
@@ -1089,32 +1221,117 @@ private:
             caught = false;
         }
         assert(caught);
+
+        std::cout << "test [ " << test_counter << " ] ok.\n";
+        ++test_counter;
     }
 
-    static void testProduct(int n)
+    void test_operator_with_range(
+        int number_of_tests,
+        char operator__,
+        int min_range_a,
+        int max_range_a,
+
+        int min_range_b,
+        int max_range_b
+
+    )
     {
-        srand(time(0));
         long long ia, ib, ic;
         BigInt bia, bib, bic;
 
         auto start = std::chrono::high_resolution_clock::now();
 
-        for (size_t i = 0; i < n; i++)
+        for (size_t i = 0; i < number_of_tests; i++)
         {
-            ia = (long long)(rand() % 1000000) - 500000;
-            ib = (long long)(rand() % 1000000) - 500000;
-            ic = ia * ib;
+            ia = (long long)rand() % (max_range_a - min_range_a);
+            ib = (long long)rand() % (max_range_b - min_range_b);
+
+            if (max_range_a >= 0 || min_range_a >= 0)
+            {
+                ia += min_range_a;
+            }
+            else
+            {
+                ia += max_range_a;
+            }
+
+            if (max_range_b >= 0 || min_range_b >= 0)
+            {
+                ib += min_range_b;
+            }
+            else
+            {
+                ib += max_range_b;
+            }
+
+            if (ia > max_range_a || ia < min_range_a)
+            {
+                throw std::invalid_argument("out of range");
+            }
+            if (ib > max_range_b || ib < min_range_b)
+            {
+                throw std::invalid_argument("out of range");
+            }
+
+            switch (operator__)
+            {
+            case '/':
+                ib += (ib == 0);
+                ic = ia / ib;
+                break;
+            case '*':
+                ic = ia * ib;
+                break;
+            case '+':
+                ic = ia + ib;
+                break;
+            case '-':
+                ic = ia - ib;
+                break;
+            case '%':
+                ib += (ib == 0);
+                ic = ia % ib;
+                break;
+
+            default:
+                throw std::invalid_argument("unknown operator");
+                break;
+            }
 
             bia = std::to_string(ia);
             bib = std::to_string(ib);
 
-            bic = bia * bib;
+            switch (operator__)
+            {
+            case '/':
+
+                bic = bia / bib;
+
+                break;
+            case '*':
+                bic = bia * bib;
+                break;
+            case '+':
+                bic = bia + bib;
+                break;
+            case '-':
+                bic = bia - bib;
+                break;
+            case '%':
+                bic = bia % bib;
+                break;
+
+            default:
+                throw std::invalid_argument("unknown operator");
+                break;
+            }
 
             if (atoll(bic.to_string().c_str()) != ic)
             {
                 std::cerr << "ERROR in test: " << i << std::endl;
-                std::cerr << ia << " * " << ib << " = " << ic << std::endl;
-                std::cerr << "you get " << bia << " * " << bib << " = " << bic << std::endl;
+                std::cerr << ia << ' ' << operator__ << ' ' << ib << " = " << ic << std::endl;
+                std::cerr << "you get " << bia << ' ' << operator__ << ' ' << bib << " = " << bic << std::endl;
                 exit(-1);
             }
         }
@@ -1122,32 +1339,99 @@ private:
 
         int64_t microsec = std::chrono::duration_cast<std::chrono::microseconds>(finish - start).count();
 
-        std::cout << "OK passed all product tests (" << n << ") in " << microsec << " micro second.\n";
+        std::cout << "test [ " << test_counter << " ]:" << " OK passed all " << operator__ << " tests(" << number_of_tests << ") in " << microsec << " micro second.\n";
+
+        ++test_counter;
     }
 
-    static void testSum(int n)
+    void test_operator_with_range_same(
+        int number_of_tests,
+        char operator__,
+        int min_range_a,
+        int max_range_a
+
+    )
     {
-        long long ia, ib, ic;
-        BigInt bia, bib, bic;
+        long long ia, ic;
+        BigInt bia, bic;
 
         auto start = std::chrono::high_resolution_clock::now();
 
-        for (size_t i = 0; i < n; i++)
+        for (size_t i = 0; i < number_of_tests; i++)
         {
-            ia = (long long)(rand() % 1000000) - 500000;
-            ib = (long long)(rand() % 1000000) - 500000;
-            ic = ia + ib;
+            ia = (long long)rand() % (max_range_a - min_range_a);
+
+            if (max_range_a >= 0 || min_range_a >= 0)
+            {
+                ia += min_range_a;
+            }
+            else
+            {
+                ia += max_range_a;
+            }
+
+            if (ia > max_range_a || ia < min_range_a)
+            {
+                throw std::invalid_argument("out of range");
+            }
+
+            switch (operator__)
+            {
+            case '/':
+                ia += (ia == 0);
+                ic = ia / ia;
+                break;
+            case '*':
+                ic = ia * ia;
+                break;
+            case '+':
+                ic = ia + ia;
+                break;
+            case '-':
+                ic = ia - ia;
+                break;
+            case '%':
+                ia += (ia == 0);
+                ic = ia % ia;
+                break;
+
+            default:
+                throw std::invalid_argument("unknown operator");
+                break;
+            }
 
             bia = std::to_string(ia);
-            bib = std::to_string(ib);
 
-            bic = bia + bib;
+            switch (operator__)
+            {
+            case '/':
+
+                bic = bia / bia;
+
+                break;
+            case '*':
+                bic = bia * bia;
+                break;
+            case '+':
+                bic = bia + bia;
+                break;
+            case '-':
+                bic = bia - bia;
+                break;
+            case '%':
+                bic = bia % bia;
+                break;
+
+            default:
+                throw std::invalid_argument("unknown operator");
+                break;
+            }
 
             if (atoll(bic.to_string().c_str()) != ic)
             {
                 std::cerr << "ERROR in test: " << i << std::endl;
-                std::cerr << ia << " + " << ib << " = " << ic << std::endl;
-                std::cerr << "you get " << bia << " + " << bib << " = " << bic << std::endl;
+                std::cerr << ia << ' ' << operator__ << ' ' << ia << " = " << ic << std::endl;
+                std::cerr << "you get " << bia << ' ' << operator__ << ' ' << bia << " = " << bic << std::endl;
                 exit(-1);
             }
         }
@@ -1155,106 +1439,8 @@ private:
 
         int64_t microsec = std::chrono::duration_cast<std::chrono::microseconds>(finish - start).count();
 
-        std::cout << "OK passed all sum tests (" << n << ") in " << microsec << " micro second.\n";
-    }
-
-    static void testMinus(int n)
-    {
-        long long ia, ib, ic;
-        BigInt bia, bib, bic;
-
-        auto start = std::chrono::high_resolution_clock::now();
-
-        for (size_t i = 0; i < n; i++)
-        {
-            ia = (long long)(rand() % 1000000) - 500000;
-            ib = (long long)(rand() % 1000000) - 500000;
-            ic = ia - ib;
-
-            bia = std::to_string(ia);
-            bib = std::to_string(ib);
-
-            bic = bia - bib;
-
-            if (atoll(bic.to_string().c_str()) != ic)
-            {
-                std::cerr << "ERROR in test: " << i << std::endl;
-                std::cerr << ia << " - " << ib << " = " << ic << std::endl;
-                std::cerr << "you get " << bia << " * " << bib << " = " << bic << std::endl;
-                exit(-1);
-            }
-        }
-        auto finish = std::chrono::high_resolution_clock::now();
-
-        int64_t microsec = std::chrono::duration_cast<std::chrono::microseconds>(finish - start).count();
-
-        std::cout << "OK passed all sum tests (" << n << ") in " << microsec << " micro second.\n";
-    }
-
-    static void testDivide(int n)
-    {
-        long long ia, ib, ic;
-        BigInt bia, bib, bic;
-
-        auto start = std::chrono::high_resolution_clock::now();
-
-        for (size_t i = 0; i < n; i++)
-        {
-            ia = (long long)(rand() % 1000000) - 500000;
-            ib = (long long)(rand() % 1000000) - 500000;
-            ic = ia / ib;
-
-            bia = std::to_string(ia);
-            bib = std::to_string(ib);
-
-            bic = bia / bib;
-
-            if (atoll(bic.to_string().c_str()) != ic)
-            {
-                std::cerr << "ERROR in test: " << i << std::endl;
-                std::cerr << ia << " / " << ib << " = " << ic << std::endl;
-                std::cerr << "you get " << bia << " / " << bib << " = " << bic << std::endl;
-                exit(-1);
-            }
-        }
-        auto finish = std::chrono::high_resolution_clock::now();
-
-        int64_t microsec = std::chrono::duration_cast<std::chrono::microseconds>(finish - start).count();
-
-        std::cout << "OK passed all sum tests (" << n << ") in " << microsec << " micro second.\n";
-    }
-
-    static void testMod(int n)
-    {
-        long long ia, ib, ic;
-        BigInt bia, bib, bic;
-
-        auto start = std::chrono::high_resolution_clock::now();
-
-        for (size_t i = 0; i < n; i++)
-        {
-            ia = (long long)(rand() % 1000000) - 500000;
-            ib = (long long)(rand() % 1000000) - 500000;
-            ic = ia % ib;
-
-            bia = std::to_string(ia);
-            bib = std::to_string(ib);
-
-            bic = bia % bib;
-
-            if (atoll(bic.to_string().c_str()) != ic)
-            {
-                std::cerr << "ERROR in test: " << i << std::endl;
-                std::cerr << ia << " * " << ib << " = " << ic << std::endl;
-                std::cerr << "you get " << bia << " * " << bib << " = " << bic << std::endl;
-                exit(-1);
-            }
-        }
-        auto finish = std::chrono::high_resolution_clock::now();
-
-        int64_t microsec = std::chrono::duration_cast<std::chrono::microseconds>(finish - start).count();
-
-        std::cout << "OK passed all sum tests (" << n << ") in " << microsec << " micro second.\n";
+        std::cout << "test [ " << test_counter << " ]:" << " OK passed all " << operator__ << " tests(" << number_of_tests << ") in " << microsec << " micro second.\n";
+        ++test_counter;
     }
 };
 #endif
