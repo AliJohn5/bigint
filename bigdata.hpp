@@ -1,7 +1,7 @@
-#ifndef BIGINT_ALI
-#define BIGINT_ALI
-
+#ifndef BIGDATA_ALI
+#define BIGDATA_ALI
 #define TESTS_BIGINT
+#define TESTS_BIGDBL
 
 #include <iostream>
 #include <string>
@@ -12,6 +12,7 @@
 #include <cassert>
 
 #define alid(a) std::cout << a << '\n'
+
 class BigInt
 {
 
@@ -334,6 +335,17 @@ class BigInt
 public:
     std::string num;
     bool isPositive = true;
+
+    void append(std::string s)
+    {
+        num += s;
+    }
+
+    void appendInverse(std::string s)
+    {
+        num = s + num;
+    }
+
     std::string to_string()
     {
         if (isPositive)
@@ -1445,4 +1457,159 @@ private:
 };
 #endif
 
+class BigDbl
+{
+private:
+    long long _e = 0;
+    BigInt _n;
+    void setNumFromString(std::string &s, long long &e)
+    {
+        long long pointIndex = s.find_first_of('.');
+
+        if (pointIndex != std::string::npos)
+        {
+            long long newE = s.length() - pointIndex + 1;
+            if (_e > newE)
+            {
+                s += std::string(_e - newE, '0');
+            }
+            else
+            {
+                _e = newE;
+            }
+
+            s.erase(pointIndex, 1);
+        }
+        else
+        {
+            s += std::string(_e, '0');
+        }
+        _n = s;
+    }
+
+public:
+    std::string to_string()
+    {
+
+        std::string s = _n.to_string();
+        if (_e > 0)
+            s.insert(s.begin() + s.length() - _e + 2, '.');
+        return s;
+    }
+
+    void increaseE(long long e)
+    {
+        long long dif = abs(e - _e);
+        if (_e < e)
+        {
+            _e = e;
+            _n.append(std::string(dif, '0'));
+        }
+    }
+
+    BigDbl() {}
+    BigDbl(BigInt n) : _n(n)
+    {
+    }
+    BigDbl(BigInt n, long long e) : _n(n), _e(e)
+    {
+    }
+
+    BigDbl(const char *s)
+    {
+        std::string str = s;
+        setNumFromString(str, _e);
+    }
+
+    BigDbl(std::string s)
+    {
+        setNumFromString(s, _e);
+    }
+
+    BigDbl(long double n)
+    {
+        std::string str = std::to_string(n);
+        setNumFromString(str, _e);
+    }
+
+    BigDbl(const char *s, long long e)
+    {
+        std::string str = s;
+        setNumFromString(str, _e);
+    }
+
+    BigDbl(std::string s, long long e)
+    {
+        setNumFromString(s, _e);
+    }
+
+    BigDbl(long double n, long long e)
+    {
+        std::string str = std::to_string(n);
+        setNumFromString(str, _e);
+    }
+
+    bool operator==(BigDbl a)
+    {
+        // TODO
+    }
+};
+
+#ifdef TESTS_BIGDBL
+class BigDblTester
+{
+private:
+    int test_counter = 1;
+
+public:
+    void run_all_tests(int n)
+    {
+        test_define();
+    }
+
+    void test_define()
+    {
+        BigDbl n1,
+            n2(100.10),
+            n3(1000),
+            n4(1000.23),
+            n5(100.10, 5),
+            n6(1000, 5),
+            n7(1000.23, 5),
+            n8("100.10"),
+            n9("1000"),
+            n10("1000.23"),
+            n11("100.10", 5),
+            n12("1000", 5),
+            n13("1000.23", 5);
+
+        assert(n2.to_string() == "100.100000");
+        assert(n3.to_string() == "1000.000000");
+        assert(n4.to_string() == "1000.230000");
+
+        assert(n5.to_string() == "100.100000");
+        assert(n6.to_string() == "1000.000000");
+        assert(n7.to_string() == "1000.230000");
+
+        assert(n8.to_string() == "100.10");
+        assert(n9.to_string() == "1000");
+        assert(n10.to_string() == "1000.23");
+
+        assert(n11.to_string() == "100.10");
+        assert(n12.to_string() == "1000");
+        assert(n13.to_string() == "1000.23");
+
+        std::cout << "test [ " << test_counter << " ] ok.\n";
+
+        ++test_counter;
+    }
+    BigDblTester() {};
+    ~BigDblTester() {};
+};
 #endif
+
+#endif
+
+/*
+100.2
+*/
